@@ -1,0 +1,68 @@
+name: ci
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  # Native: vet + build + test. This package is interface declarations only —
+  # there are no statements to cover, so there is no coverage gate; `go test`
+  # simply confirms the package and any compile-time conformance assertions
+  # build. (Conformance of concrete devices like pool.Volume is asserted in
+  # their own repos, which import this contract.)
+  native:
+    name: native
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: stable
+          check-latest: true
+          cache: true
+
+      - name: Vet
+        run: go vet ./...
+
+      - name: Build
+        run: go build ./...
+
+      - name: Test
+        run: go test ./...
+
+  # Cross-compile the contract on every 64-bit target the family supports, so a
+  # change to the interfaces can never break a consumer on any arch. s390x is
+  # the big-endian check. No QEMU run needed — there is nothing to execute.
+  cross:
+    name: cross ${{ matrix.arch }}
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        arch: [amd64, arm64, riscv64, loong64, ppc64le, s390x]
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: stable
+          check-latest: true
+          cache: true
+
+      - name: Build ${{ matrix.arch }}
+        env:
+          GOOS: linux
+          GOARCH: ${{ matrix.arch }}
+          CGO_ENABLED: '0'
+        run: go build ./...
