@@ -1,4 +1,8 @@
-# go-volumes/interface
+# interface
+
+[![Go Reference](https://pkg.go.dev/badge/github.com/go-volumes/interface.svg)](https://pkg.go.dev/github.com/go-volumes/interface)
+[![License: BSD-3-Clause](https://img.shields.io/badge/license-BSD--3--Clause-blue)](LICENSE)
+[![CI](https://github.com/go-volumes/interface/actions/workflows/ci.yml/badge.svg)](https://github.com/go-volumes/interface/actions/workflows/ci.yml)
 
 The shared **block-device contract** for the go-volumes family — Go package
 `volume`. A fixed-size, random-access store that higher layers read and write
